@@ -73,6 +73,6 @@ def username_exists(username):
     #todo: check database to see if username exists
     return False
 
-def store_account(username, hashed_password):
+def store_new_account(username, hashed_password):
     #todo: store username and password in database
     return False

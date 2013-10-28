@@ -72,3 +72,83 @@ def get_updates(username, m_id):
 
     conn.commit()
     conn.close()
+
+#client calls this to see if the username already exists
+def username_exists(username):
+    conn = sqlite3.connect(db_file)
+    c = conn.cursor()
+    entries = c.execute('SELECT * FROM users WHERE username=?', (username))
+    if len(entries) > 0:
+        conn.commit()
+        conn.close()
+        return False
+    conn.commit()
+    conn.close()
+    return True
+
+#client calls this to try to login
+def user_is_valid(username, hashed_password):
+    conn = sqlite3.connect(db_file)
+    c = conn.cursor()
+    entries = c.execute('SELECT * FROM users WHERE username=?', (username,))
+    if(len(entries) > 0 and hashed_password == entries[0][1]):
+        conn.commit()
+        conn.close()
+        return True
+    conn.commit()
+    conn.close()
+    return False
+
+#client calls this to store a new account, returns whether or not it was successful
+def store_new_account(username, hashed_password):
+    conn = sqlite3.connect(db_file)
+    c = conn.cursor()
+    try:
+        c.execute('INSERT INTO users (username, password) VALUES (?,?)' (username, hashed_password))
+        conn.commit()
+        conn.close()
+        return True
+    except:
+        conn.close()
+        return False
+
+#client calls this to register a new machine, returns whether or not it was successful
+def store_new_machine(username, hashed_password, machine_name, folder_path):
+    if(not user_is_valid(username, hashed_password) or machine_exists(username, machine_name)):
+        return False
+    conn = sqlite3.connect(db_file)
+    c = conn.cursor()
+    try:
+        c.execute('INSERT INTO machines (username, machine_name, folder_path) VALUES (?,?,?)',
+                  (username, machine_name, folder_path))
+        conn.commit()
+        conn.close()
+        return True
+    except:
+        conn.close()
+        return False
+
+#returns true if this username, machine_name pair already exists in the machines table
+def machine_exists(username, machine_name):
+    conn = sqlite3.connect(db_file)
+    c = conn.cursor()
+    entries = c.execute('SELECT * FROM machines WHERE username=? and machine_name=?', (username, machine_name))
+    if len(entries) > 0:
+        conn.commit()
+        conn.close()
+        return True
+    conn.close()
+    return False
+
+#client calls this to get the folder_path for the specific machine, returns None if the machine does not exist
+def get_folder_path(username, machine_name):
+    conn = sqlite3.connect(db_file)
+    c = conn.cursor()
+    entries = c.execute('SELECT * FROM machines WHERE username=? AND machine_name=?', (username, machine_name))
+    if len(entries) > 0:
+        folder_path = entries[0][3]
+        conn.commit()
+        conn.close()
+        return folder_path
+    conn.close()
+    return None

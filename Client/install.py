@@ -22,7 +22,7 @@ def install():
 
     machine_name = get_machine_name()
     folder_path = get_folder_path()
-    if(store_new_user_information(username, hashed_password, machine_name, folder_path)):
+    if(store_new_machine(username, hashed_password, machine_name, folder_path)):
         print "Installation Success!"
         return True
     else:
@@ -38,16 +38,16 @@ def get_folder_path():
         else:
             print "Invalid path."
 
-def store_new_user_information(username, hashed_password, machine_name, folder_path):
+def store_new_machine(username, hashed_password, machine_name, folder_path):
     #todo: talk to server and try to store information
     return False
 
 def path_exists(path):
-    #todo: check if path exists
+    #todo: check if path exists on client
     return False
 
 def path_is_valid(path):
-    #todo: check if path can be created
+    #todo: check if path can be created on client
     return True
 
 if __name__ == "__main__":
