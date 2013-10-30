@@ -10,6 +10,7 @@ import os, time
 def checkChangesOnClient(folder_path):
     #prime the file list
     before = os.listdir(folder_path)
+
     file_list_changes = []
     file_dict_before = {}
     for filename in before:
