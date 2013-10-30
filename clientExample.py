@@ -12,6 +12,7 @@ from twisted.protocols.ftp import FTPClient, FTPFileListProtocol
 from twisted.internet.protocol import Protocol, ClientCreator
 from twisted.python import usage
 from twisted.internet import reactor
+from twisted.protocols.basic import FileSender
 
 # Standard library imports
 import string
@@ -61,8 +62,8 @@ def showBuffer(result, bufferProtocol):
 class Options(usage.Options):
     optParameters = [['host', 'h', 'localhost'],
                      ['port', 'p', 21],
-                     ['username', 'u', 'anonymous'],
-                     ['password', None, 'twisted@'],
+                     ['username', 'alex', 'anonymous'],
+                     ['password', 'test', 'twisted@'],
                      ['passive', None, 0],
                      ['debug', 'd', 1],
                     ]
@@ -88,6 +89,8 @@ def connectionFailed(f):
 
 def connectionMade(ftpClient):
     # Get the current working directory
+    print "CONNECTED"
+    print ftpClient
     ftpClient.pwd().addCallbacks(success, fail)
 
     # Get a detailed listing of the current directory
@@ -105,7 +108,22 @@ def connectionMade(ftpClient):
     d = ftpClient.nlst('.', proto)
     d.addCallbacks(showBuffer, fail, callbackArgs=(proto,))
     d.addCallback(lambda result: reactor.stop())
+    filename = "FtpDownload.txt"
+    uploadpath = "FtpUpload.txt"
+    d1, d2 = ftpClient.storeFile(uploadpath)
+    d1.addCallback(cbStore, filename).addErrback(fileTransferFail)
+    d2.addCallback(lambda _: reactor.stop())
 
+def fileTransferFail(failure):
+    failure.printTraceback()
+    reactor.stop()
+
+def cbStore(consumer, filename):
+    print "attempting to send file"
+    fs = FileSender()
+    d = fs.beginFileTransfer(open(filename, 'r'), consumer)
+    d.addCallback(lambda _: consumer.finish()).addErrback(fileTransferFail)
+    return d
 
 # this only runs if the module was *not* imported
 if __name__ == '__main__':
