@@ -1,13 +1,24 @@
 __author__ = 'zheng_000'
 
 import getpass
-import hashlib
+from db_calls import *
+
+def create_account():
+    username = set_username()
+    password = set_password()
+    hashed_password = hash_password(password)
+    if(store_new_account(username, hashed_password)):
+        print "Succeeded in creating new user: " + username
+    else:
+        print "Failed to create new user: " + username
+    return username, hashed_password
 
 def login():
     logged_in = False
     while(not logged_in):
         username, hashed_password = prompt_login()
         if(user_is_valid(username, hashed_password)):
+            print "Valid Credentials!"
             logged_in = True
         else:
             print "Invalid Credentials"
@@ -17,7 +28,7 @@ def prompt_login():
     def login():
         print "Login:"
     username = prompt_user()
-    password = prompt_password()
+    password = prompt_password("Password:")
     hashed_password = hash_password(password)
     return username, hashed_password
 
@@ -31,18 +42,15 @@ def hash_password(password):
     salt = "A8912eASDkJHR341SA"
     return hashlib.sha512(password + salt).hexdigest()
 
-def create_account():
-    username = set_username()
-    password = set_password()
-
 def set_username():
     valid_user = False
     username = ""
     while(not valid_user):
         username = prompt_user()
-        if(username_is_valid(username)):
+        if(validate_username(username)):
             valid_user = True
-        print "Invalid Username"
+        else:
+            print "Invalid Username"
     return username
 
 def set_password():
@@ -58,21 +66,9 @@ def set_password():
             password = password1
     return password
 
-def user_is_valid(username, hashed_password):
-    #todo: check database to see if this is a user
-    return True
-
-def username_is_valid(username):
+def validate_username(username):
     if(len(username) < 3 or len(username) > 20):
         return False
     if(username_exists(username)):
         return False
     return True
-
-def username_exists(username):
-    #todo: check database to see if username exists
-    return False
-
-def store_new_account(username, hashed_password):
-    #todo: store username and password in database
-    return False
