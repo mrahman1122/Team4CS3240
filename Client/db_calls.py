@@ -62,9 +62,10 @@ def drop_tables():
 #SECTION: CACHE OPERATIONS--------------------------------------------------------------------------
 
 #Remove all of the entries in the updatecache of username and m_id
-def clear_cache(username, m_id):
+def clear_cache(username, machine_name):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
+    m_id = get_machine_id(username, machine_name)
     print "REMOVING ENTRIES FOR USER:" + username + " AND MACHINE ID: " + str(m_id)
     c.execute('DELETE FROM ' + db_cachetable + ' WHERE username=%s and m_id=%s', (username, m_id))
     c.close()
@@ -72,9 +73,10 @@ def clear_cache(username, m_id):
     db.close()
 
 #updates the cache for all machines of the user that are not m_id
-def update_cache(username, m_id, path, command):
+def update_cache(username, machine_name, path, command):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
+    m_id = get_machine_id(username, machine_name)
     machine_ids = get_machine_ids_from_user(username)
     for machine_id in machine_ids:
         if machine_id != m_id:
@@ -89,9 +91,10 @@ def update_cache(username, m_id, path, command):
     db.close()
 
 #get all updates necessary for user and machine
-def get_updates(username, m_id):
+def get_updates(username, machine_name):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
+    m_id = get_machine_id(username, machine_name)
     numEntries = c.execute('SELECT file_path, command FROM ' + db_cachetable + ' WHERE username=%s AND m_id=%s', (username, m_id))
     retval = []
     for row in range(numEntries):
