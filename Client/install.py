@@ -17,8 +17,10 @@ def install():
         elif(has_account_input == "no" or has_account_input == "n"):
             user_input = True
     if(has_account):
+        print "Please Log In:"
         username, hashed_password = prompt_login()
     else:
+        print "Please Create an Account:"
         username, hashed_password = create_account()
 
     machine_name = get_machine_name()
@@ -33,7 +35,7 @@ def install():
 def input_folder_path():
     valid_path = False
     while(not valid_path):
-        path = raw_input("Enter exact path:")
+        path = raw_input("Where is your local folder? Enter exact path:")
         if(path_is_valid(path)):
             valid_path = True
             return path

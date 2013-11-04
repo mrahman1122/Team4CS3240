@@ -11,6 +11,7 @@ def create_account():
         print "Succeeded in creating new user: " + username
     else:
         print "Failed to create new user: " + username
+    return username, hashed_password
 
 def login():
     logged_in = False
