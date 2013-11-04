@@ -27,7 +27,7 @@ def prompt_login():
     def login():
         print "Login:"
     username = prompt_user()
-    password = prompt_password()
+    password = prompt_password("Password:")
     hashed_password = hash_password(password)
     return username, hashed_password
 
@@ -48,7 +48,8 @@ def set_username():
         username = prompt_user()
         if(validate_username(username)):
             valid_user = True
-        print "Invalid Username"
+        else:
+            print "Invalid Username"
     return username
 
 def set_password():

@@ -10,11 +10,11 @@ def install():
     user_input = False
     has_account = False
     while(not user_input):
-        has_account_input = raw_input("Do you have an account? y/n").lower()
-        if(has_account_input == "yes" or has_account_input == "no"):
+        has_account_input = raw_input("Do you have an account? y/n: ").lower()
+        if(has_account_input == "yes" or has_account_input == "y"):
             has_account = True
             user_input = True
-        elif(has_account_input == "y" or has_account_input == "n"):
+        elif(has_account_input == "no" or has_account_input == "n"):
             user_input = True
     if(has_account):
         username, hashed_password = prompt_login()
@@ -36,6 +36,7 @@ def input_folder_path():
         path = raw_input("Enter exact path:")
         if(path_is_valid(path)):
             valid_path = True
+            return path
         else:
             print "Invalid path."
 
