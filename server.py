@@ -43,10 +43,9 @@ class MyFTPRealm(FTPRealm):
 
 if __name__ == "__main__":
 
-    #p = Portal(FTPRealm('./'),[AllowAnonymousAccess(), FilePasswordDB("pass.dat")])
-    p = Portal(MyFTPRealm('/no_anon_access/', userHome="/tmp/", callback=opsCall),[FilePasswordDB("pass.dat"), ])
+    p = Portal(MyFTPRealm('./'),[AllowAnonymousAccess(), FilePasswordDB("pass.dat")])
+    #p = Portal(MyFTPRealm('/no_anon_access/', userHome="/tmp/", callback=opsCall),[FilePasswordDB("pass.dat"), ])
     f = ftp.FTPFactory(p)
-    f.allowAnonymous = False
     f.welcomeMessage = "CS3240 Team 4 Project"
 
     log.startLogging(sys.stdout)
