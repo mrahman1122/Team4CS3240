@@ -53,6 +53,7 @@ def showFiles(result, fileListProtocol):
               % (file['filename'], file['size'], file['date'])
     print 'Total: %d files' % (len(fileListProtocol.files))
 
+
 def showBuffer(result, bufferProtocol):
     print 'Got data:'
     print bufferProtocol.buffer.getvalue()
@@ -105,7 +106,6 @@ def connectionMade(ftpClient):
     d = ftpClient.nlst('.', proto)
     d.addCallbacks(showBuffer, fail, callbackArgs=(proto,))
     d.addCallback(lambda result: reactor.stop())
-
 
 # this only runs if the module was *not* imported
 if __name__ == '__main__':
