@@ -2,18 +2,15 @@ __author__ = 'mjr3vk'
 #folder monitoring version 1
 #ApplyChanges method will occur beforehand
 import os, time
-from twisted.protocols.ftp import FTPClient
-#Don't know if it needs to do most of the stuff that it actually does.  Do we really need to know about renames?
-#Won't we just have to send a new file anyways regardless of whether it is renamed or updates?  Or maybe just makes it
-#quiker to rename on server rather then encapsulate in FTP and send to server?  ASK!!!!
+from clientExample import *
 
 #folder_path is pulled from sqlite database after login on particular machine
-def checkChangesOnClient(folder_path):
+def check_changes_on_client(folder_path):
     #prime the file list
     before = os.listdir(folder_path)
-
     file_list_changes = []
     file_dict_before = {}
+
     for filename in before:
             path = folder_path+filename
             time_stamp = os.path.getmtime(path)
@@ -67,4 +64,4 @@ def checkChangesOnClient(folder_path):
 
     #FTPClient.methods
 
-checkChangesOnClient("C:/Users/Student/Desktop/TestFolder/")
+check_changes_on_client("C:/Users/Student/Desktop/TestFolder/")

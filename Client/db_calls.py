@@ -66,7 +66,7 @@ def clear_cache(username, machine_name):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
     m_id = get_machine_id(username, machine_name)
-    print "REMOVING ENTRIES FOR USER:" + username + " AND MACHINE ID: " + str(m_id)
+    print "REMOVING ENTRIES FOR USER:" + username + " AND MACHINE NAME: " + str(machine_name)
     c.execute('DELETE FROM ' + db_cachetable + ' WHERE username=%s and m_id=%s', (username, m_id))
     c.close()
     db.commit()
@@ -84,7 +84,7 @@ def update_cache(username, machine_name, path, command):
             print "PATH:" + path
             print "COMMAND:" + command
             print "USER:" + username
-            print "MACHINE ID:" + str(machine_id)
+            print "MACHINE NAME:" + str(machine_name)
             c.execute('INSERT INTO ' + db_cachetable + ' (username, m_id, file_path, command) VALUES (%s,%s,%s,%s)', (username, machine_id, path, command))
     c.close()
     db.commit()
@@ -199,7 +199,7 @@ def get_machine_id(username, machine_name):
         return None
 
 #client calls this to get the folder_path for the specific machine, returns None if the machine does not exist
-def get_folder_path(username, machine_name):
+def get_client_folder_path(username, machine_name):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
     numEntries = c.execute('SELECT * FROM ' + db_machinestable + ' WHERE username=%s AND machine_name=%s', (username, machine_name))
