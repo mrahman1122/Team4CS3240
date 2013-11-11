@@ -5,7 +5,7 @@ import os, time
 from clientExample import *
 
 #folder_path is pulled from sqlite database after login on particular machine
-def checkChangesOnClient(folder_path):
+def check_changes_on_client(folder_path):
     #prime the file list
     before = os.listdir(folder_path)
     file_list_changes = []
@@ -64,4 +64,4 @@ def checkChangesOnClient(folder_path):
 
     #FTPClient.methods
 
-checkChangesOnClient("C:/Users/Student/Desktop/TestFolder/")
+check_changes_on_client("C:/Users/Student/Desktop/TestFolder/")
