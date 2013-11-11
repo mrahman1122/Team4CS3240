@@ -18,8 +18,6 @@ def opsCall(obj):
 ## MAKE AN FTP SHELL TO HANDLE THE REQUESTS FOR FILES
 ## METHODS NEEDED: CREATE, RENAME, UPDATE, DELETE for files
 ## METHODS NEEDED: access, list, changeDir, makeDir
-## AVH -- > FTP shell should handle all of those for us -- as far as CRUD
-## same with make/change dir
 
 class MyFTPRealm(FTPRealm):
 
@@ -43,13 +41,11 @@ class MyFTPRealm(FTPRealm):
 
         raise NotImplementedError("Only IFTPShell interface is supported by this realm")
 
-
 if __name__ == "__main__":
 
-    #p = Portal(FTPRealm('./'),[AllowAnonymousAccess(), FilePasswordDB("pass.dat")])
-    p = Portal(MyFTPRealm('/no_anon_access/', userHome="/tmp/", callback=opsCall),[FilePasswordDB("pass.dat"), ])
+    p = Portal(MyFTPRealm('./'),[AllowAnonymousAccess(), FilePasswordDB("pass.dat")])
+    #p = Portal(MyFTPRealm('/no_anon_access/', userHome="/tmp/", callback=opsCall),[FilePasswordDB("pass.dat"), ])
     f = ftp.FTPFactory(p)
-    f.allowAnonymous = True
     f.welcomeMessage = "CS3240 Team 4 Project"
 
     log.startLogging(sys.stdout)
