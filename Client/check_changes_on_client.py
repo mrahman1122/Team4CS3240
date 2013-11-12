@@ -83,8 +83,14 @@ def check_changes_on_client(onedir_path):
                     file_list_changes.append([key, file_dict_after[key], "Updated"])
 
         file_dict_before = file_dict_after
-        print file_list_changes #this will be changed to create FTP object and send the object to the server
+        print file_list_changes
+        #ask if we still need to include timestamps on the server.  Easier to parse to file if no timestamps.
+        with open('changes', 'a') as the_file:
+            for change_list in file_list_changes:
+                for change in change_list:
+                    the_file.write(change)
+                    the_file.write(',')
+                the_file.write('\n')
 
-    #FTPClient.methods
 
 check_changes_on_client("C:/Users/Student/Desktop/TestFolder/")
