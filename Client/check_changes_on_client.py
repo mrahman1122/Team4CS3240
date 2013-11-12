@@ -2,30 +2,53 @@ __author__ = 'mjr3vk'
 #folder monitoring version 1
 #ApplyChanges method will occur beforehand
 import os, time
-from clientExample import *
+from client import *
 
 #folder_path is pulled from sqlite database after login on particular machine
-def check_changes_on_client(folder_path):
+def check_changes_on_client(onedir_path):
     #prime the file list
-    before = os.listdir(folder_path)
+    before = os.listdir(onedir_path)
     file_list_changes = []
     file_dict_before = {}
 
-    for filename in before:
-            path = folder_path+filename
+    for folder in before:
+        if os.path.isdir(onedir_path + folder):
+            for filename in os.listdir(onedir_path + folder):
+                path = onedir_path + folder + "/" + filename
+                time_stamp = os.path.getmtime(path)
+                file_dict_before[folder + "/" + filename] = time_stamp
+            # this includes the base folder
+            path = onedir_path + folder
             time_stamp = os.path.getmtime(path)
-            file_dict_before[filename] = time_stamp
+            file_dict_before[folder] = time_stamp
+        # folders below are actually file names
+        else:
+            path = onedir_path + folder
+            time_stamp = os.path.getmtime(path)
+            file_dict_before[folder] = time_stamp
 
     while 1:
         time.sleep(5)
         #setup
         file_list_changes[:] = []
-        after = os.listdir(folder_path)
+        after = os.listdir(onedir_path)
         file_dict_after = {}
-        for filename in after:
-            path = folder_path+filename
-            time_stamp = os.path.getmtime(path)
-            file_dict_after[filename] = time_stamp
+
+        for folder in after:
+            if os.path.isdir(onedir_path + folder):
+                for filename in os.listdir(onedir_path + folder):
+                    path = onedir_path + folder + "/" + filename
+                    time_stamp = os.path.getmtime(path)
+                    file_dict_after[folder + "/" + filename] = time_stamp
+                # this includes the base folder
+                path = onedir_path + folder
+                time_stamp = os.path.getmtime(path)
+                file_dict_after[folder] = time_stamp
+        # folder below are actually file names
+            else:
+                path = onedir_path + folder
+                time_stamp = os.path.getmtime(path)
+                file_dict_after[folder] = time_stamp
 
         #handles multiple file additions, removals, and renames
         temp_change_list = []

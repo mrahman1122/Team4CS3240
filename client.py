@@ -96,7 +96,8 @@ def connectionMade(ftpClient):
 
     #ftpClient.pwd().addCallbacks(success, fail)
     filename = "C:\Users\Alex\Desktop\CS 3240\Team4CS3240\FtpUpload.txt"
-    storeFile(ftpClient, filename)
+    #storeFile(ftpClient, filename)
+    #renameFile(ftpClient, "C:/Users/Student/Desktop/TestFolder/testfile2.txt", "C:/Users/Student/Desktop/TestFolder/testfile.txt" )
 
     # Get a detailed listing of the current directory
     fileList = FTPFileListProtocol()
@@ -117,7 +118,7 @@ def connectionMade(ftpClient):
 
 # You have to log into the server in order to post
 def login(ftpClient, username, password):
-    ftpClient.queueLogin(username,password)
+    ftpClient.queueLogin(username, password)
 
 ##Prompts the ftpClient to Store to Server
 #@ftpClient == the ftp client instance
@@ -141,7 +142,7 @@ def cbStore(sender):
 def getFile(ftpClient, path):
     print "Getting File: "
     print path
-    #protocol = FTP()
+    protocol = FTP()
     return ftpClient.retrieveFile(path, protocol)
 
 ##Returns a deferred object that indicates success/failure
