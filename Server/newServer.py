@@ -9,7 +9,7 @@ from twisted.cred.checkers import AllowAnonymousAccess, FilePasswordDB
 from twisted.internet import reactor
 from twisted.python import log
 from twisted.internet.defer import succeed, failure
-from twisted.cred.checkers import InMemoryUsernamePasswordDatabaseDontUse as \InMemoryDB
+from twisted.cred.checkers import InMemoryUsernamePasswordDatabaseDontUse
 
 def opsCall(obj):
     print "Processing", obj.fObj.name
@@ -66,7 +66,7 @@ if __name__ == "__main__":
      
     p = Portal(FTPRealm('./', userHome='/Users'), 
         (   AllowAnonymousAccess(),
-            InMemoryDB(**users),)
+            InMemoryUsernamePasswordDatabaseDontUse(**users),)
         )
      
     f = FTPFactory(p)
