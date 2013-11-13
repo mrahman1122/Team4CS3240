@@ -9,6 +9,7 @@ from twisted.cred.checkers import AllowAnonymousAccess, FilePasswordDB
 from twisted.internet import reactor
 from twisted.python import log
 from twisted.internet.defer import succeed, failure
+from twisted.cred.checkers import InMemoryDB, InMemoryUsernamePasswordDatabaseDontUse
 
 def opsCall(obj):
     print "Processing", obj.fObj.name
