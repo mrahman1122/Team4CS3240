@@ -46,10 +46,12 @@ if __name__ == "__main__":
     # p = Portal(MyFTPRealm('/no_anon_access/', userHome="/tmp/", callback=opsCall),[FilePasswordDB("pass.dat", ":", 0, 0, True, None, False)])
     
     # Try#3
-    checker = checkers.InMemoryUsernamePasswordDatabaseDontUse()
-    checker.addUser("guest", "password")
     realm = FTPRealm('./', userHome='/Users')
-    p = Portal(realm, [checker])
+    p = Portal(realm)
+
+    checker = InMemoryUsernamePasswordDatabaseDontUse()
+    checker.addUser("guest", "password")
+    p.registerChecker(checker)
 
     f = ftp.FTPFactory(p)
     f.welcomeMessage = "CS3240 Team 4 Project"
