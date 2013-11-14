@@ -47,9 +47,9 @@ if __name__ == "__main__":
     
     # Try#3
     checker = checkers.InMemoryUsernamePasswordDatabaseDontUse()
-    check.addUser("guest", "password")
-    realm = FTPRealm()
-    p = portal.Portal(realm, [checker])
+    checker.addUser("guest", "password")
+    realm = FTPRealm('./', userHome='/Users')
+    p = Portal(realm, [checker])
 
     f = ftp.FTPFactory(p)
     f.welcomeMessage = "CS3240 Team 4 Project"
