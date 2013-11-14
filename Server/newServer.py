@@ -1,6 +1,7 @@
 __author__ = 'masudurrahman'
 
 import sys
+import os
 from twisted.protocols import ftp
 from twisted.protocols.ftp import FTPFactory, FTPAnonymousShell, FTPRealm, FTP, FTPShell, IFTPShell
 from twisted.cred.portal import Portal
@@ -11,30 +12,30 @@ from twisted.python import log
 from twisted.internet.defer import succeed, failure
 from twisted.cred.checkers import InMemoryUsernamePasswordDatabaseDontUse
 
-def opsCall(obj):
-    print "Processing", obj.fObj.name
-    return "Completed"
+# def opsCall(obj):
+#     print "Processing", obj.fObj.name
+#     return "Completed"
 
-class MyFTPRealm(FTPRealm):
+# class MyFTPRealm(FTPRealm):
 
-    def __init__(self, anonymousRoot):
-        self.anonymousRoot = filepath.FilePath(anonymousRoot)
+#     def __init__(self, anonymousRoot):
+#         self.anonymousRoot = filepath.FilePath(anonymousRoot)
 
-    def requestAvatar(self, avatarId, mind, *interfaces):
-        for iface in interfaces:
+#     def requestAvatar(self, avatarId, mind, *interfaces):
+#         for iface in interfaces:
 
-            if iface is IFTPShell:
+#             if iface is IFTPShell:
 
-                if avatarId is checkers.ANONYMOUS:
-                    avatar = FTPAnonymousShell(self.anonymousRoot)
+#                 if avatarId is checkers.ANONYMOUS:
+#                     avatar = FTPAnonymousShell(self.anonymousRoot)
 
-                else:
-                    avatar = FTPShell(filepath.FilePath("/home/") + avatarId)
+#                 else:
+#                     avatar = FTPShell(filepath.FilePath("/home/") + avatarId)
 
-                return (IFTPShell, avatar,
-                        getattr(avatar, 'logout', lambda: None))
+#                 return (IFTPShell, avatar,
+#                         getattr(avatar, 'logout', lambda: None))
 
-        raise NotImplementedError("Only IFTPShell interface is supported by this realm")
+#         raise NotImplementedError("Only IFTPShell interface is supported by this realm")
 
 if __name__ == "__main__":
     
@@ -45,31 +46,31 @@ if __name__ == "__main__":
     # p = Portal(MyFTPRealm('/no_anon_access/', userHome="/tmp/", callback=opsCall),[FilePasswordDB("pass.dat", ":", 0, 0, True, None, False)])
     
     # Try#3
-    # checker = checkers.InMemoryUsernamePasswordDatabaseDontUse()
-    # check.addUser("guest", "password")
-    # realm = MyFTPRealm()
-    # p = portal.Portal(realm, [checker])
+    checker = checkers.InMemoryUsernamePasswordDatabaseDontUse()
+    check.addUser("guest", "password")
+    realm = FTPRealm()
+    p = portal.Portal(realm, [checker])
 
-    # f = ftp.FTPFactory(p)
-    # f.welcomeMessage = "CS3240 Team 4 Project"
+    f = ftp.FTPFactory(p)
+    f.welcomeMessage = "CS3240 Team 4 Project"
 
-    # log.startLogging(sys.stdout)
+    log.startLogging(sys.stdout)
 
-    # reactor.listenTCP(21, f)
-    # reactor.run()
-
-    PASSWORD = ''
- 
-    users = {
-        os.environ['USER']: PASSWORD
-    }
-     
-    p = Portal(FTPRealm('./', userHome='/Users'), 
-        (   AllowAnonymousAccess(),
-            InMemoryUsernamePasswordDatabaseDontUse(**users),)
-        )
-     
-    f = FTPFactory(p)
-     
     reactor.listenTCP(21, f)
     reactor.run()
+
+    # PASSWORD = ''
+ 
+    # users = {
+    #     os.environ['USER']: PASSWORD
+    # }
+     
+    # p = Portal(FTPRealm('./', userHome='/Users'), 
+    #     (   AllowAnonymousAccess(),
+    #         InMemoryDB(**users),)
+    #     )
+     
+    # f = FTPFactory(p)
+     
+    # reactor.listenTCP(21, f)
+    # reactor.run()
