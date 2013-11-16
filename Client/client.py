@@ -14,7 +14,7 @@ from twisted.internet.protocol import Protocol, ClientCreator
 from twisted.python import usage
 from twisted.internet import reactor
 from twisted.protocols.basic import FileSender
-
+from Folder_Monitor import *
 
 # Standard library imports
 import string
@@ -93,6 +93,8 @@ def connectionMade(ftpClient):
     # Get the current working directory
     print "CONNECTED"
     #d = ftpClient.getDirectory()
+    path = "../Team4CS3240"
+    fol_mon = Folder_Monitor(path)
 
     #ftpClient.pwd().addCallbacks(success, fail)
     filename = "FtpUpload.txt"
@@ -154,8 +156,6 @@ def renameFile(ftpClient, oldPath, newPath):
 def deleteFile(ftpClient, path):
     print "Deleting " + path
     ftpClient.removeFile(path).addCallbacks(cbFinish)
-
-
 
 ##Closes the deferred object
 def cbFinish(sender):
