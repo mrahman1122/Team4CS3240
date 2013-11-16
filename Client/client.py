@@ -103,11 +103,6 @@ def connectionMade(ftpClient):
         time.sleep(5)
         #ftpClient.pwd().addCallbacks(success, fail)
     ##Previous test methods, not reached from while loop
-    filename = "FtpUpload.txt"
-    storeFile(ftpClient, filename)
-    renameFile(ftpClient, filename, "foo.txt")
-    getFile(ftpClient, filename)
-    getDirectory(ftpClient)
 
     # Get a detailed listing of the current directory
    # fileList = FTPFileListProtocol()
@@ -190,7 +185,20 @@ def cbFinish(sender):
 def runClient(ftpClient, fol_mon):
     'Check for Changes'
     changes = fol_mon.check_changes()
-    
+    for row in changes:
+        if changes[row][2] == "Removed":
+            deleteFile(ftpClient, changes[row][0])
+
+        if changes[row][2] == "Added":
+            storeFile(ftpClient, changes[row][0])
+
+        if changes[row][2] == "Updated":
+            deleteFile(ftpClient, changes[row][0])
+            storeFile(ftpClient, changes[row][0])
+
+        if changes[row][2] == "Renamed":
+            renameFile(ftpClient, changes[row][0], changes[row][3])
+
     'Something else asserts a change is made'
     'Handle Event'
 
