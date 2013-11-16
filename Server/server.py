@@ -26,12 +26,13 @@ class MyFTPRealm(FTPRealm):
         self.callback = callback
 
     def requestAvatar(self, avatarId, mind, *interfaces):
+        print "TRYING TO LOG IN"
         for iface in interfaces:
 
             if iface is IFTPShell:
 
                 if avatarId is checkers.ANONYMOUS:
-                    avatar = FTPAnonymousShell(self.anonymousRoot)
+                    avatar = FTPShell(self.anonymousRoot)
 
                 else:
                     avatar = FTPShell(self.getHomeDirectory(avatarId))
@@ -43,7 +44,7 @@ class MyFTPRealm(FTPRealm):
 
 if __name__ == "__main__":
 
-    p = Portal(MyFTPRealm('./'),[AllowAnonymousAccess(), FilePasswordDB("pass.dat")])
+    p = Portal(MyFTPRealm('./'),[AllowAnonymousAccess(), FilePasswordDB("pass1.dat")])
     #p = Portal(MyFTPRealm('/no_anon_access/', userHome="/tmp/", callback=opsCall),[FilePasswordDB("pass.dat"), ])
     f = ftp.FTPFactory(p)
     f.welcomeMessage = "CS3240 Team 4 Project"

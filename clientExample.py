@@ -9,10 +9,12 @@ An example of using the FTP client
 
 # Twisted imports
 from twisted.protocols.ftp import FTPClient, FTPFileListProtocol
+from twisted.protocols import ftp
 from twisted.internet.protocol import Protocol, ClientCreator
 from twisted.python import usage
 from twisted.internet import reactor
 from twisted.protocols.basic import FileSender
+
 
 # Standard library imports
 import string
@@ -90,40 +92,81 @@ def connectionFailed(f):
 def connectionMade(ftpClient):
     # Get the current working directory
     print "CONNECTED"
-    print ftpClient
-    ftpClient.pwd().addCallbacks(success, fail)
+    #d = ftpClient.getDirectory()
+
+    #ftpClient.pwd().addCallbacks(success, fail)
+    filename = "FtpUpload.txt"
+    storeFile(ftpClient, filename)
+    renameFile(ftpClient, filename, "foo.txt")
+    getFile(ftpClient, "foo.txt")
+   # deleteFile(ftpClient, "foo.txt")
+
 
     # Get a detailed listing of the current directory
-    fileList = FTPFileListProtocol()
-    d = ftpClient.list('.', fileList)
-    d.addCallbacks(showFiles, fail, callbackArgs=(fileList,))
+   # fileList = FTPFileListProtocol()
+   #d = ftpClient.list('.', fileList)
+   #d.addCallbacks(showFiles, fail, callbackArgs=(fileList,))
 
     # Change to the parent directory
-    ftpClient.cdup().addCallbacks(success, fail)
-    
-    # Create a buffer
-    proto = BufferingProtocol()
+    #ftpClient.cdup().addCallbacks(success, fail)
 
-    # Get short listing of current directory, and quit when done
-    d = ftpClient.nlst('.', proto)
-    d.addCallbacks(showBuffer, fail, callbackArgs=(proto,))
-    d.addCallback(lambda result: reactor.stop())
-    filename = "FtpDownload.txt"
-    uploadpath = "FtpUpload.txt"
-    d1, d2 = ftpClient.storeFile(uploadpath)
-    d1.addCallback(cbStore, filename).addErrback(fileTransferFail)
-    d2.addCallback(lambda _: reactor.stop())
+
+##Prompts the ftpClient to Store to Server
+#@ftpClient == the ftp client instance
+#@ filename == path of file to be stored
+def storeFile(ftpClient, filename):
+    print "Storing:"
+    print filename
+    d1, d2 = ftpClient.storeFile(filename)
+    d1.addCallback(cbStore)
+    d2.addCallback(cbFinish)
+
+##Closes the deferred object
+def cbStore(sender):
+    print "SUCCESSFULLY STORED"
+    sender.transport.write("This file was empty, and then we wrote to it")
+    sender.finish()
+
+## prompts the ftpClient to get a file from server
+##@ftpClient -- the ftp client instance
+#@path -- path to the file on server
+## returns a Deferred object -- becomes the file if file exists
+#need callback for an incorrect file
+def getFile(ftpClient, path):
+    print "Getting File: "
+    print path
+    protocol = Protocol()
+    ftpClient.retrieveFile(path, protocol).addCallbacks(cbGET)
+
+def cbGET(sender):
+    print sender
+
+
+##Returns a deferred object that indicates success/failure
+def renameFile(ftpClient, oldPath, newPath):
+    print "Renaming"
+    print oldPath
+    print "to "
+    print newPath
+    d = ftpClient.rename(oldPath, newPath)
+
+##Returns a deferred object that indicates success/failure
+def deleteFile(ftpClient, path):
+    print "Deleting " + path
+    ftpClient.removeFile(path).addCallbacks(cbFinish)
+
+
+
+##Closes the deferred object
+def cbFinish(sender):
+    print sender
+
 
 def fileTransferFail(failure):
+    print "Transfer failed"
     failure.printTraceback()
     reactor.stop()
 
-def cbStore(consumer, filename):
-    print "attempting to send file"
-    fs = FileSender()
-    d = fs.beginFileTransfer(open(filename, 'r'), consumer)
-    d.addCallback(lambda _: consumer.finish()).addErrback(fileTransferFail)
-    return d
 
 # this only runs if the module was *not* imported
 if __name__ == '__main__':
