@@ -28,11 +28,13 @@ class MyFTPRealm(FTPRealm):
     def requestAvatar(self, avatarId, mind, *interfaces):
         print "TRYING TO LOG IN"
         for iface in interfaces:
-
             if iface is IFTPShell:
 
                 if avatarId is checkers.ANONYMOUS:
                     avatar = FTPShell(self.anonymousRoot)
+                    ###Test Directory so we can get a folder to monitor
+                    avatar.makeDirectory("test")
+
 
                 else:
                     avatar = FTPShell(self.getHomeDirectory(avatarId))
@@ -41,6 +43,7 @@ class MyFTPRealm(FTPRealm):
                         getattr(avatar, 'logout', lambda: None))
 
         raise NotImplementedError("Only IFTPShell interface is supported by this realm")
+
 
 if __name__ == "__main__":
 
