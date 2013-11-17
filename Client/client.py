@@ -15,7 +15,7 @@ from twisted.python import usage
 from twisted.internet import reactor
 from twisted.protocols.basic import FileSender
 from Folder_Monitor import *
-import time
+import time, os
 
 # Standard library imports
 import string
@@ -95,7 +95,7 @@ def connectionMade(ftpClient):
     print "CONNECTED"
     #ftpClient.pwd().addCallbacks(cbFinish)
     getDirectory(ftpClient)
-    path = "../Team4CS3240/Client"
+    path = "../Team4CS3240/Client/"
     fol_mon = Folder_Monitor(path)
     #checks for changes in tandem with the client/folder monitor, waits 5 seconds until next check
     while (1):
@@ -120,7 +120,7 @@ def connectionMade(ftpClient):
 def storeFile(ftpClient, filename):
     print "Storing:"
     print filename
-    d1, d2 = ftpClient.storeFile(filename)
+    d1,d2 = ftpClient.storeFile(filename)
     d1.addCallback(cbStore)
     d2.addCallback(cbFinish)
 ##Closes the deferred object
@@ -186,19 +186,24 @@ def runClient(ftpClient, fol_mon):
     'Check for Changes'
     changes = fol_mon.check_changes()
     for row in changes:
-        if changes[row][2] == "Removed":
-            deleteFile(ftpClient, changes[row][0])
+        if row[2] == "Removed":
+            deleteFile(ftpClient, row[0])
+            return
 
-        if changes[row][2] == "Added":
-            storeFile(ftpClient, changes[row][0])
+        if row[2] == "Added":
+            storeFile(ftpClient, row[0])
+            return
 
-        if changes[row][2] == "Updated":
-            deleteFile(ftpClient, changes[row][0])
-            storeFile(ftpClient, changes[row][0])
+        if row[2] == "Updated":
+            print ftpClient
+            print row[0]
+            deleteFile(ftpClient, row[0])
+            storeFile(ftpClient, row[0])
+            return
 
-        if changes[row][2] == "Renamed":
-            renameFile(ftpClient, changes[row][0], changes[row][3])
-
+        if row[2] == "Renamed":
+            renameFile(ftpClient, row[0], row[3])
+            return
     'Something else asserts a change is made'
     'Handle Event'
 
