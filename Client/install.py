@@ -35,8 +35,11 @@ def install():
 def input_folder_path():
     valid_path = False
     while(not valid_path):
-        path = raw_input("Where is your local folder? Enter exact path:")
+        path = raw_input("Where is your local folder? Enter exact path with slash:")
         if(path_is_valid(path)):
+            if path[-1] != '/':
+                path += '/'
+            print path
             valid_path = True
             return path
         else:

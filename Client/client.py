@@ -15,6 +15,9 @@ from twisted.python import usage
 from twisted.internet import reactor
 from twisted.protocols.basic import FileSender
 from Folder_Monitor import *
+import db_calls
+import user_account_library
+import machine_library
 import time, os
 
 # Standard library imports
@@ -25,6 +28,9 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+username = ""
+machine_name = ""
+client_full_path = ""
 
 class BufferingProtocol(Protocol):
     """Simple utility class that holds all data written to it in a buffer."""
@@ -90,17 +96,34 @@ def connectionFailed(f):
     print "Connection Failed:", f
     reactor.stop()
 
+def set_globals():
+    global username, machine_name, client_full_path
+    username, hashedpassword = user_account_library.login()
+    machine_name = machine_library.get_machine_name()
+    client_full_path = db_calls.get_client_folder_path(username, machine_name)
+
+
+#main function for running stuff
 def connectionMade(ftpClient):
     # Get the current working directory
     print "CONNECTED"
+
+    set_globals()
     #ftpClient.pwd().addCallbacks(cbFinish)
     getDirectory(ftpClient)
-    path = "../Team4CS3240/Client/"
+    path = client_full_path
+    print "Path: " + path
     fol_mon = Folder_Monitor(path)
+
     #checks for changes in tandem with the client/folder monitor, waits 5 seconds until next check
     while (1):
+        #if we've detected any changes to acquire, refresh our snapshot of our folder
+        if getChanges(ftpClient, fol_mon):
+            fol_mon.check_changes()
+
+        #checks the client for changes and pushes them
         runClient(ftpClient, fol_mon)
-        time.sleep(5)
+        time.sleep(60)
         #ftpClient.pwd().addCallbacks(success, fail)
     ##Previous test methods, not reached from while loop
 
@@ -120,9 +143,11 @@ def connectionMade(ftpClient):
 def storeFile(ftpClient, filename):
     print "Storing:"
     print filename
+    db_calls.update_cache(username, machine_name, filename, "Added")
     d1,d2 = ftpClient.storeFile(filename)
     d1.addCallback(cbStore)
     d2.addCallback(cbFinish)
+
 ##Closes the deferred object
 def cbStore(sender):
     print "SUCCESSFULLY STORED"
@@ -132,6 +157,7 @@ def cbStore(sender):
 def getDirectory(ftpClient):
     d = ftpClient.getDirectory()
     d.addCallback(cbDir)
+
 def cbDir(result):
     print result
 
@@ -167,12 +193,15 @@ def renameFile(ftpClient, oldPath, newPath):
     print oldPath
     print "to "
     print newPath
+    db_calls.update_cache(username, machine_name, oldPath, "Removed")
+    db_calls.update_cache(username, machine_name, newPath, "Added")
     d = ftpClient.rename(oldPath, newPath)
 
 ##Returns a deferred object that indicates success/failure
 ##@Lenny --> If you want to add database logic when calling delete, put it here before the ftpClient call to delete
 def deleteFile(ftpClient, path):
     print "Deleting " + path
+    db_calls.update_cache(username, machine_name, path, "Removed")
     ftpClient.removeFile(path).addCallbacks(cbFinish)
 
 ##Closes the deferred object
@@ -206,6 +235,20 @@ def runClient(ftpClient, fol_mon):
             return
     'Something else asserts a change is made'
     'Handle Event'
+
+def getChanges(ftpClient, fol_mon):
+    changes = db_calls.get_updates(username, machine_name) #row[0] is filename, row[1] is change
+    retVal = False
+    for row in changes:
+        filename = row[0]
+        filepath = client_full_path + filename
+        if row[1] == "Removed":
+            os.remove(filepath)
+            retVal = True
+        elif row[1] == "Added":
+            getFile(ftpClient, filename)
+            retVal = True
+    return retVal
 
 # this only runs if the module was *not* imported
 if __name__ == '__main__':
