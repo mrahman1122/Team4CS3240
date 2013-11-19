@@ -97,7 +97,7 @@ def get_updates(username, machine_name):
     m_id = get_machine_id(username, machine_name)
     numEntries = c.execute('SELECT file_path, command FROM ' + db_cachetable + ' WHERE username=%s AND m_id=%s', (username, m_id))
     retval = []
-    for row in range(numEntries):
+    for i in range(numEntries):
         row = c.fetchone()
         file_path = row[0]
         command = row[1]
@@ -146,6 +146,15 @@ def store_new_account(username, hashed_password):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
     c.execute('INSERT INTO ' + db_usertable + ' (username, password) VALUES (%s,%s)', (username, hashed_password))
+    c.close()
+    db.commit()
+    db.close()
+    return True
+
+def change_password(username, new_hashed_password):
+    db = MySQLdb.connect(db_server, db_username, db_password, db_database)
+    c = db.cursor()
+    c.execute('UPDATE ' + db_usertable + ' set password=%s WHERE username=%s', (new_hashed_password, username))
     c.close()
     db.commit()
     db.close()

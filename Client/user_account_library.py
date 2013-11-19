@@ -66,6 +66,14 @@ def set_password():
             password = password1
     return password
 
+def reset_password():
+    print "Please Log In"
+    username, h = login()
+    print "Please Change Your Password"
+    password = set_password()
+    new_hashed_password = hash_password(password)
+    change_password(username, new_hashed_password)
+
 def validate_username(username):
     if(len(username) < 3 or len(username) > 20):
         return False

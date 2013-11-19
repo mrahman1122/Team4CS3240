@@ -2,7 +2,7 @@ __author__ = 'zheng_000'
 
 import hashlib
 
-is_production = False
+is_production = True
 
 if is_production:
     db_server = "stardock.cs.virginia.edu"
