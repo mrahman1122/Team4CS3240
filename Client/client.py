@@ -22,6 +22,7 @@ import time, os
 
 # Standard library imports
 import string
+import threading
 import sys
 try:
     from cStringIO import StringIO
@@ -100,7 +101,12 @@ def set_globals():
     global username, machine_name, client_full_path
     username, hashedpassword = user_account_library.login()
     machine_name = machine_library.get_machine_name()
+    print "Machine Name: " + machine_name
     client_full_path = db_calls.get_client_folder_path(username, machine_name)
+    if not client_full_path:
+        print "No folder path found, please install first"
+        exit()
+    print "Client Folder Path: " + client_full_path
 
 
 #main function for running stuff
@@ -110,20 +116,21 @@ def connectionMade(ftpClient):
 
     set_globals()
     #ftpClient.pwd().addCallbacks(cbFinish)
-    getDirectory(ftpClient)
+
     path = client_full_path
     print "Path: " + path
+
+    getDirectory(ftpClient)
+
+    print "Got FTP Client"
     fol_mon = Folder_Monitor(path)
 
     #checks for changes in tandem with the client/folder monitor, waits 5 seconds until next check
     while (1):
-        #if we've detected any changes to acquire, refresh our snapshot of our folder
-        if getChanges(ftpClient, fol_mon):
-            fol_mon.check_changes()
+        t = threading.Thread(target=clientTask, args = (ftpClient, fol_mon))
+        t.start()
+        time.sleep(5)
 
-        #checks the client for changes and pushes them
-        runClient(ftpClient, fol_mon)
-        time.sleep(60)
         #ftpClient.pwd().addCallbacks(success, fail)
     ##Previous test methods, not reached from while loop
 
@@ -135,16 +142,25 @@ def connectionMade(ftpClient):
     # Change to the parent directory
     #ftpClient.cdup().addCallbacks(success, fail)
 
+def clientTask(ftpClient, fol_mon):
+    if getChanges(ftpClient, fol_mon):
+        fol_mon.check_changes()
+
+    #checks the client for changes and pushes them
+    runClient(ftpClient, fol_mon)
+    return
 
 ##Prompts the ftpClient to Store to Server
 #@ftpClient == the ftp client instance
 #@ filename == path of file to be stored
 ##@Lenny --> If you want to add database logic when calling store, put it here before the ftpClient call to store
 def storeFile(ftpClient, filename):
-    print "Storing:"
-    print filename
     db_calls.update_cache(username, machine_name, filename, "Added")
-    d1,d2 = ftpClient.storeFile(filename)
+    full_path = client_full_path + filename
+    full_path = os.path.abspath(full_path)
+    print "Storing:"
+    print full_path
+    d1,d2 = ftpClient.storeFile(full_path)
     d1.addCallback(cbStore)
     d2.addCallback(cbFinish)
 
@@ -217,24 +233,19 @@ def runClient(ftpClient, fol_mon):
     for row in changes:
         if row[2] == "Removed":
             deleteFile(ftpClient, row[0])
-            return
 
         if row[2] == "Added":
             storeFile(ftpClient, row[0])
-            return
 
         if row[2] == "Updated":
             print ftpClient
             print row[0]
             deleteFile(ftpClient, row[0])
             storeFile(ftpClient, row[0])
-            return
 
         if row[2] == "Renamed":
             renameFile(ftpClient, row[0], row[3])
-            return
-    'Something else asserts a change is made'
-    'Handle Event'
+
 
 def getChanges(ftpClient, fol_mon):
     changes = db_calls.get_updates(username, machine_name) #row[0] is filename, row[1] is change
