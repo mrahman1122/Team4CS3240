@@ -9,21 +9,14 @@ class Folder_Monitor:
         before = os.listdir(onedir_path)
         file_dict_before = {}
 
-        for folder in before:
-            if os.path.isdir(onedir_path + folder):
-                for filename in os.listdir(onedir_path + folder):
-                    path = onedir_path + folder + "/" + filename
-                    time_stamp = os.path.getmtime(path)
-                    file_dict_before[folder + "/" + filename] = time_stamp
-                # this includes the base folder
-                path = onedir_path + folder
-                time_stamp = os.path.getmtime(path)
-                file_dict_before[folder] = time_stamp
-            # folders below are actually file names
-            else:
-                path = onedir_path + folder
-                time_stamp = os.path.getmtime(path)
-                file_dict_before[folder] = time_stamp
+        for path, subdirs, files in os.walk(onedir_path):
+            for name in subdirs:
+                time_stamp = os.path.getmtime(os.path.join(path, name))
+                file_dict_before[os.path.join(path, name)] = time_stamp
+            for name in files:
+                time_stamp = os.path.getmtime(os.path.join(path, name))
+                file_dict_before[os.path.join(path, name)] = time_stamp
+
 
         self.file_dict_before = file_dict_before
         self.onedir_path = onedir_path
@@ -35,21 +28,13 @@ class Folder_Monitor:
         after = os.listdir(self.onedir_path)
         file_dict_after = {}
 
-        for folder in after:
-            if os.path.isdir(self.onedir_path + folder):
-                for filename in os.listdir(self.onedir_path + folder):
-                    path = self.onedir_path + folder + "/" + filename
-                    time_stamp = os.path.getmtime(path)
-                    file_dict_after[folder + "/" + filename] = time_stamp
-                # this includes the base folder
-                path = self.onedir_path + folder
-                time_stamp = os.path.getmtime(path)
-                file_dict_after[folder] = time_stamp
-        # folder below are actually file names
-            else:
-                path = self.onedir_path + folder
-                time_stamp = os.path.getmtime(path)
-                file_dict_after[folder] = time_stamp
+        for path, subdirs, files in os.walk(self.onedir_path):
+            for name in subdirs:
+                time_stamp = os.path.getmtime(os.path.join(path, name))
+                file_dict_after[os.path.join(path, name)] = time_stamp
+            for name in files:
+                time_stamp = os.path.getmtime(os.path.join(path, name))
+                file_dict_after[os.path.join(path, name)] = time_stamp
 
         #handles multiple file additions, removals, and renames
         temp_change_list = []
@@ -74,6 +59,7 @@ class Folder_Monitor:
                     temp_change_list.remove(row)
                     temp_change_list.remove(newrow)
 
+        #puts remaining changes into final change list
         for row in temp_change_list:
             file_list_changes.append(row)
 
