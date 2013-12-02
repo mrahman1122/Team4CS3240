@@ -19,6 +19,7 @@ import db_calls
 import user_account_library
 import machine_library
 import time, os
+from twisted.internet.task import LoopingCall
 
 # Standard library imports
 import string
@@ -125,12 +126,8 @@ def connectionMade(ftpClient):
     print "Got FTP Client"
     fol_mon = Folder_Monitor(path)
 
-    #checks for changes in tandem with the client/folder monitor, waits 5 seconds until next check
-    while (1):
-        t = threading.Thread(target=clientTask, args = (ftpClient, fol_mon))
-        t.start()
-        time.sleep(5)
-
+    LoopRC = LoopingCall(runClient, ftpClient, fol_mon)
+    LoopRC.start(10)
         #ftpClient.pwd().addCallbacks(success, fail)
     ##Previous test methods, not reached from while loop
 
