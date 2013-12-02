@@ -6,7 +6,7 @@ from Folder_Monitor import Folder_Monitor
 
 def check_changes_on_client():
 
-    fm = Folder_Monitor("C:/Users/Student\Desktop\TestFolder/")
+    fm = Folder_Monitor("C:/Users/Student/Desktop/TestFolder/")
 
     while 1:
         time.sleep(5)

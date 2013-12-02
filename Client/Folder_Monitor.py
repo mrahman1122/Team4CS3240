@@ -41,11 +41,11 @@ class Folder_Monitor:
 
         for key in file_dict_after:
             if self.file_dict_before.has_key(key) == False:
-                temp_change_list.append([key, file_dict_after[key], "Added"])
+                temp_change_list.append([key.replace(self.onedir_path,''), file_dict_after[key], "Added"])
 
         for key in self.file_dict_before:
             if file_dict_after.has_key(key) == False:
-                temp_change_list.append([key, self.file_dict_before[key], "Removed"])
+                temp_change_list.append([key.replace(self.onedir_path, ''), self.file_dict_before[key], "Removed"])
 
         for row in temp_change_list:
             stamp = row[1]
@@ -53,9 +53,9 @@ class Folder_Monitor:
             for newrow in temp_change_list:
                 if stamp == newrow[1] and type != newrow[2]:
                     if row[2] == "Removed":
-                        file_list_changes.append([row[0], row[1], "Renamed", newrow[0]])
+                        file_list_changes.append([row[0].replace(self.onedir_path, ''), row[1], "Renamed", newrow[0]])
                     else:
-                        file_list_changes.append([newrow[0], row[1], "Renamed", row[0]])
+                        file_list_changes.append([newrow[0].replace(self.onedir_path, ''), row[1], "Renamed", row[0]])
                     temp_change_list.remove(row)
                     temp_change_list.remove(newrow)
 
@@ -67,7 +67,7 @@ class Folder_Monitor:
         for key in self.file_dict_before:
             if file_dict_after.has_key(key):
                 if self.file_dict_before[key] != file_dict_after[key]:
-                    file_list_changes.append([key, file_dict_after[key], "Updated"])
+                    file_list_changes.append([key.replace(self.onedir_path, ''), file_dict_after[key], "Updated"])
 
         self.file_dict_before = file_dict_after
         return file_list_changes
