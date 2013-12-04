@@ -33,8 +33,23 @@ def setup_tables():
                 username varchar(50) NOT NULL,
                 m_id int NOT NULL,
                 file_path varchar(50) NOT NULL,
+                file_path2 varchar(50) NOT NULL,
                 command varchar(50) NOT NULL,
                 PRIMARY KEY (c_id),
+                FOREIGN KEY (username) REFERENCES ''' + db_usertable + ''' (username),
+                FOREIGN KEY (m_id) REFERENCES ''' + db_machinestable + ''' (m_id)
+                )''')
+
+    print "CREATING LOG TABLE"
+    c.execute('''CREATE TABLE ''' + db_logtable + '''
+                (
+                l_id int not null auto_increment,
+                username varchar(50) NOT NULL,
+                m_id int NOT NULL,
+                file_path varchar(50) NOT NULL,
+                file_path2 varchar(50) NOT NULL,
+                command varchar(50) NOT NULL,
+                PRIMARY KEY (l_id),
                 FOREIGN KEY (username) REFERENCES ''' + db_usertable + ''' (username),
                 FOREIGN KEY (m_id) REFERENCES ''' + db_machinestable + ''' (m_id)
                 )''')
@@ -46,6 +61,8 @@ def setup_tables():
 def drop_tables():
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
+    print "DROPPING LOG TABLE"
+    c.execute('''DROP TABLE IF EXISTS ''' + db_logtable)
     print "DROPPING CACHE TABLE"
     c.execute('''DROP TABLE IF EXISTS ''' + db_cachetable)
     print "DROPPING MACHINES TABLE"
@@ -66,26 +83,45 @@ def clear_cache(username, machine_name):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
     m_id = get_machine_id(username, machine_name)
-    print "REMOVING ENTRIES FOR USER:" + username + " AND MACHINE NAME: " + str(machine_name)
+    #print "REMOVING ENTRIES FOR USER:" + username + " AND MACHINE NAME: " + str(machine_name)
     c.execute('DELETE FROM ' + db_cachetable + ' WHERE username=%s and m_id=%s', (username, m_id))
     c.close()
     db.commit()
     db.close()
 
 #updates the cache for all machines of the user that are not m_id
-def update_cache(username, machine_name, path, command):
+def update_cache(username, machine_name, path, command, path2=""):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
     m_id = get_machine_id(username, machine_name)
     machine_ids = get_machine_ids_from_user(username)
     for machine_id in machine_ids:
         if machine_id != m_id:
-            print "NEW CACHE ENTRY-----------------------"
-            print "PATH:" + path
-            print "COMMAND:" + command
-            print "USER:" + username
-            print "MACHINE NAME:" + str(machine_name)
-            c.execute('INSERT INTO ' + db_cachetable + ' (username, m_id, file_path, command) VALUES (%s,%s,%s,%s)', (username, machine_id, path, command))
+            #print "NEW CACHE ENTRY-----------------------"
+            #print "PATH:" + path
+            #print "COMMAND:" + command
+            #print "USER:" + username
+            #print "MACHINE NAME:" + str(machine_name)
+
+            c.execute('INSERT INTO ' + db_cachetable + " (username, m_id, file_path, command, file_path2) VALUES (%s,%s,%s,%s)", (str(username), str(machine_id), str(path), str(command), str(path2)))
+    c.close()
+    db.commit()
+    db.close()
+    update_log(username, machine_name, path, command)
+
+def update_log(username, machine_name, path, command, path2=""):
+    db = MySQLdb.connect(db_server, db_username, db_password, db_database)
+    c = db.cursor()
+    m_id = get_machine_id(username, machine_name)
+    #print "NEW LOG ENTRY-----------------------"
+    #print "PATH:" + path
+    #print "COMMAND:" + command
+    #print "USER:" + username
+    #print "MACHINE NAME:" + str(machine_name)
+    try:
+        c.execute('INSERT INTO ' + db_logtable + " (username, m_id, file_path, command, file_path2) VALUES (%s,%s,%s,%s, %s)", (str(username), str(m_id), str(path), str(command), str(path2)))
+    except Exception as e:
+        print e
     c.close()
     db.commit()
     db.close()
@@ -95,17 +131,19 @@ def get_updates(username, machine_name):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
     m_id = get_machine_id(username, machine_name)
-    numEntries = c.execute('SELECT file_path, command FROM ' + db_cachetable + ' WHERE username=%s AND m_id=%s', (username, m_id))
+    numEntries = c.execute('SELECT file_path, command, file_path2 FROM ' + db_cachetable + ' WHERE username=%s AND m_id=%s', (username, m_id))
     retval = []
     for i in range(numEntries):
         row = c.fetchone()
         file_path = row[0]
         command = row[1]
-        retval.append((file_path, command))
+        file_path2 = row[2]
+        retval.append((file_path, command, file_path2))
         #todo: do something with the file_path and command, return them as a list?
     c.close()
     db.commit()
     db.close()
+    #print "Updates for " + machine_name + ": " + str(retval)
     return retval
 
 #END CACHE OPERATIONS SECTION--------------------------------------------------------------------------
@@ -184,7 +222,7 @@ def machine_exists(username, machine_name):
 def get_machine_ids_from_user(username):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
-    numEntries = c.execute('SELECT * FROM ' + db_machinestable + ' WHERE username=%s', (username))
+    numEntries = c.execute('SELECT * FROM ' + db_machinestable + ' WHERE username=%s', (str(username)))
     machine_ids = []
     for row in range(numEntries):
         machine_ids.append(c.fetchone()[0])
@@ -195,7 +233,7 @@ def get_machine_ids_from_user(username):
 def get_machine_id(username, machine_name):
     db = MySQLdb.connect(db_server, db_username, db_password, db_database)
     c = db.cursor()
-    numEntries = c.execute('SELECT * FROM ' + db_machinestable + ' WHERE username=%s and machine_name=%s', (username, machine_name))
+    numEntries = c.execute('SELECT * FROM ' + db_machinestable + ' WHERE username=%s and machine_name=%s', (str(username), str(machine_name)))
     if numEntries > 0:
         retval = c.fetchone()[0]
         c.close()

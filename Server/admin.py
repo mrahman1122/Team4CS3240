@@ -62,3 +62,14 @@ def delete_user(username):
     db.commit()
     db.close()
     return
+
+def get_logs():
+    db = MySQLdb.connect(db_server, db_username, db_password, db_database)
+    c = db.cursor()
+    c.execute('SELECT * FROM ' + db_logtable)
+    for row in c:
+        print row
+    c.close()
+    db.commit()
+    db.close()
+

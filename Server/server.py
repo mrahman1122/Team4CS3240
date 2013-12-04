@@ -32,9 +32,6 @@ class MyFTPRealm(FTPRealm):
 
                 if avatarId is checkers.ANONYMOUS:
                     avatar = FTPShell(self.anonymousRoot)
-                    ###Test Directory so we can get a folder to monitor
-                    avatar.makeDirectory("test")
-
 
                 else:
                     avatar = FTPShell(self.getHomeDirectory(avatarId))
