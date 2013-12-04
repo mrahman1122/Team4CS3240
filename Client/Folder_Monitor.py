@@ -25,6 +25,12 @@ class Folder_Monitor:
         self.file_dict_before = file_dict_before
         self.onedir_path = onedir_path
 
+    def set_file_dict_before(self, file_dict_before):
+        self.file_dict_before = file_dict_before
+
+    def get_file_dict_before(self):
+        return self.file_dict_before
+
     def check_changes(self):
 
         file_list_changes = []
@@ -49,18 +55,24 @@ class Folder_Monitor:
 
         for key in file_dict_after:
             if self.file_dict_before.has_key(key) == False:
-                temp_change_list.append([key.replace('\\', '/'), file_dict_after[key], "Added"])
+                if os.path.isdir(self.onedir_path + key):
+                    temp_change_list.append([key.replace('\\', '/'), file_dict_after[key], "Folder Added"])
+                else:
+                    temp_change_list.append([key.replace('\\', '/'), file_dict_after[key], "Added"])
 
         for key in self.file_dict_before:
             if file_dict_after.has_key(key) == False:
-                temp_change_list.append([key.replace('\\', '/'), self.file_dict_before[key], "Removed"])
+                if os.path.isdir(self.onedir_path + key):
+                    temp_change_list.append([key.replace('\\', '/'), self.file_dict_before[key], "Folder Removed"])
+                else:
+                    temp_change_list.append([key.replace('\\', '/'), self.file_dict_before[key], "Removed"])
 
         for row in temp_change_list:
             stamp = row[1]
             type = row[2]
             for newrow in temp_change_list:
                 if stamp == newrow[1] and type != newrow[2]:
-                    if row[2] == "Removed":
+                    if row[2] == "Removed" or row[2] == "Folder Removed":
                         file_list_changes.append([row[0].replace('\\', '/'), row[1], "Renamed", newrow[0]])
                         print row[0] + " was renamed to " + newrow[0]
                     else:
@@ -72,7 +84,7 @@ class Folder_Monitor:
         #puts remaining changes into final change list
         for row in temp_change_list:
             file_list_changes.append(row)
-            if row[2] == "Added":
+            if row[2] == "Added" or row[2] == "Folder Added":
                 print row[0] + " was added"
             else:
                 print row[0] + " was removed"
@@ -81,8 +93,9 @@ class Folder_Monitor:
         for key in self.file_dict_before:
             if file_dict_after.has_key(key):
                 if self.file_dict_before[key] != file_dict_after[key]:
-                    file_list_changes.append([key.replace('\\', '/'), file_dict_after[key], "Updated"])
-                    print key + " was updated"
+                    if not os.path.isdir(self.onedir_path + key):
+                        file_list_changes.append([key.replace('\\', '/'), file_dict_after[key], "Updated"])
+                        print key + " was updated"
 
         self.file_dict_before = file_dict_after
         return file_list_changes
